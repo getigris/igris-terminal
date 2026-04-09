@@ -23,10 +23,15 @@ toml_parse() {
   _TOML_DATA=()
 
   while IFS= read -r line || [[ -n "$line" ]]; do
-    # Strip comments and whitespace
-    line="${line%%#*}"
+    # Strip leading/trailing whitespace
     line="${line#"${line%%[![:space:]]*}"}"
     line="${line%"${line##*[![:space:]]}"}"
+
+    # Strip comments only if # is not inside quotes
+    if [[ "$line" != *\"*#*\"* ]]; then
+      line="${line%%#*}"
+      line="${line%"${line##*[![:space:]]}"}"
+    fi
 
     # Skip empty lines
     [[ -z "$line" ]] && continue
@@ -65,14 +70,18 @@ _toml_parse_value() {
   raw="${raw%"${raw##*[![:space:]]}"}"
 
   # Quoted string (double quotes)
-  if [[ "$raw" =~ ^\"(.*)\"$ ]]; then
-    echo "${BASH_REMATCH[1]}"
+  if [[ "$raw" == \"*\" ]]; then
+    raw="${raw#\"}"
+    raw="${raw%\"}"
+    echo "$raw"
     return
   fi
 
   # Quoted string (single quotes)
-  if [[ "$raw" =~ ^\'(.*)\'$ ]]; then
-    echo "${BASH_REMATCH[1]}"
+  if [[ "$raw" == \'*\' ]]; then
+    raw="${raw#\'}"
+    raw="${raw%\'}"
+    echo "$raw"
     return
   fi
 
