@@ -5,7 +5,7 @@ _IG_VERSION_LOADED="${_IG_VERSION_LOADED:-}"
 [[ -n "$_IG_VERSION_LOADED" ]] && return 0
 _IG_VERSION_LOADED=1
 
-IG_VERSION="0.1.0"
+IG_VERSION="0.2.0"
 
 ig_version() {
   echo "$IG_VERSION"

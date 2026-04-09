@@ -58,10 +58,6 @@ fi
 # direnv (if installed)
 command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
 
-# ── Completions ───────────────────────────────────────────
-autoload -Uz compinit
-compinit -C
-
 # ── Welcome screen (optional) ────────────────────────────
 # Disable with: [shell] welcome = false in ig.toml
 if [[ "${IG_WELCOME:-true}" == "true" ]]; then

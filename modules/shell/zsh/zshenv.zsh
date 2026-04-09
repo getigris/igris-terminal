@@ -4,6 +4,10 @@
 export IG_HOME="${IG_HOME:-${HOME}/.local/share/ig-term}"
 export IG_CONFIG_DIR="${IG_CONFIG_DIR:-${HOME}/.config/ig-term}"
 
+# ig-term CLI
+export PATH="${IG_HOME}/bin:${PATH}"
+export MANPATH="${IG_HOME}/man:${MANPATH}"
+
 # Zim home
 export ZIM_HOME="${IG_CONFIG_DIR}/zim"
 

@@ -1,0 +1,212 @@
+.TH IG 1 "April 2026" "ig-term 0.2.0" "ig-term Manual"
+.SH NAME
+ig \- terminal configuration framework
+.SH SYNOPSIS
+.B ig
+.I command
+.RI [ options ]
+.SH DESCRIPTION
+.B ig-term
+sets up a productive, beautiful, and functional terminal with one command.
+It manages shell configuration, prompt, terminal emulator, CLI tools, fonts,
+themes, and git defaults through a modular architecture.
+.PP
+All configurations live inside the ig-term installation directory and are
+symlinked to their system paths. User customizations are preserved across
+updates.
+.SH COMMANDS
+.TP
+.B init
+First-time setup. Installs all enabled modules, creates configuration
+files, and sets up symlinks. Backs up any existing configs before
+overwriting.
+.TP
+.B apply
+Re-generate all configuration files without reinstalling packages.
+Use this after editing
+.IR ~/.config/ig-term/ig.toml .
+.TP
+.B update \fR[\fB--check\fR]
+Pull the latest ig-term version and re-apply configurations.
+With \fB--check\fR, only reports whether an update is available.
+.TP
+.B module list
+Show all available modules and their status (enabled/disabled).
+.TP
+.B module enable \fIname\fR
+Enable a module: updates ig.toml, installs packages, and configures it.
+.TP
+.B module disable \fIname\fR
+Disable a module: updates ig.toml and removes it from state tracking.
+.TP
+.B theme list
+Show available color themes. The active theme is marked with *.
+.TP
+.B theme set \fIname\fR
+Switch to a different theme and re-apply all configurations.
+.TP
+.B list
+Show installed modules and tools with versions, dates, and managed
+configuration files.
+.TP
+.B logs \fR[\fIaction\fR]
+Show operation history. Optionally filter by action type:
+.BR install ", " configure ", " update ", " remove ", " enable ", " disable .
+.TP
+.B doctor
+Run health checks: verify all tools are installed, configs exist,
+and report system information.
+.TP
+.B backup
+Manually backup all managed configuration files to
+.IR ~/.config/ig-term/backups/ .
+.TP
+.B uninstall
+Remove ig-term symlinks and restore original configurations from
+backup. Does not uninstall system packages.
+.TP
+.B version
+Show ig-term version and git commit hash.
+.TP
+.B help
+Show command summary.
+.SH MODULES
+ig-term ships with the following modules:
+.TP
+.B fonts
+Installs Nerd Fonts (default: Hack Nerd Font) for terminal icons
+and glyphs.
+.TP
+.B theme
+Loads a color palette and exports it as IG_COLOR_* environment
+variables for other modules.
+.TP
+.B shell
+ZSH with Zim framework, aliases (git, navigation, utilities),
+functions (smart-install, cdd, killport), and platform-specific
+environment exports.
+.TP
+.B prompt
+Starship cross-shell prompt with presets: default, minimal, powerline.
+.TP
+.B terminal
+Ghostty terminal emulator configuration generated from theme colors
+and user settings.
+.TP
+.B tools
+Modern CLI replacements: bat (cat), lsd (ls), fzf (fuzzy finder),
+zoxide (smarter cd).
+.TP
+.B git
+Sensible git defaults via include.path. Does not touch user identity
+(name, email, signing key).
+.SH CONFIGURATION
+ig-term uses a three-layer TOML configuration with merge semantics:
+.TP
+.B 1. Defaults
+.I ~/.local/share/ig-term/templates/ig.toml
+.br
+Shipped with ig-term. Never edit this file.
+.TP
+.B 2. User config
+.I ~/.config/ig-term/ig.toml
+.br
+Your customizations. Only specify what you want to change.
+.TP
+.B 3. Local overrides
+.I ~/.config/ig-term/local.toml
+.br
+Machine-specific settings. Not tracked by git.
+.PP
+Higher layers override lower ones. Run
+.B ig apply
+after editing.
+.SH EXAMPLE CONFIGURATION
+.nf
+[modules]
+shell = true
+prompt = true
+terminal = true
+git = false
+
+[prompt]
+preset = "minimal"
+
+[terminal]
+font_family = "JetBrains Mono Nerd Font"
+font_size = 14
+
+[theme]
+name = "tokyo-night"
+
+[shell]
+welcome = false
+.fi
+.SH EXTENDING
+.SS Custom aliases and scripts
+Drop .sh files in
+.I ~/.config/ig-term/custom/
+and they will be sourced automatically on shell startup.
+.SS Custom modules
+Create a directory in
+.I ~/.config/ig-term/modules/my-module/
+with module.toml, install.sh, and configure.sh.
+.SS Hooks
+Drop scripts in
+.I ~/.config/ig-term/hooks/{pre,post}-{install,update}.d/
+to run at lifecycle events.
+.SH FILES
+.TP
+.I ~/.local/share/ig-term/
+Installation directory.
+.TP
+.I ~/.config/ig-term/ig.toml
+User configuration.
+.TP
+.I ~/.config/ig-term/local.toml
+Machine-local overrides.
+.TP
+.I ~/.config/ig-term/state.toml
+State tracking (installed modules, tools, configs).
+.TP
+.I ~/.config/ig-term/logs/
+Operation logs (one file per day).
+.TP
+.I ~/.config/ig-term/backups/
+Backup copies of overwritten configs.
+.SH ENVIRONMENT
+.TP
+.B IG_HOME
+Override ig-term installation path (default: ~/.local/share/ig-term).
+.TP
+.B IG_CONFIG_DIR
+Override config directory (default: ~/.config/ig-term).
+.TP
+.B IG_LOG_LEVEL
+Set log verbosity: debug, info, warn, error (default: info).
+.TP
+.B IG_WELCOME
+Set to "false" to disable the welcome screen.
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B 1
+Error or health check found issues.
+.SH AUTHORS
+Alexander Diaz and contributors.
+.SH LICENSE
+Elastic License 2.0.
+.SH SEE ALSO
+.BR zsh (1),
+.BR starship (1),
+.BR ghostty (1),
+.BR bat (1),
+.BR lsd (1),
+.BR fzf (1),
+.BR zoxide (1)
+.PP
+.UR https://github.com/getigris/igris-terminal
+GitHub repository
+.UE
