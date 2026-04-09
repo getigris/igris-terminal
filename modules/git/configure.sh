@@ -20,14 +20,25 @@ _configure_git() {
     export IG_GIT_PULL_REBASE="false"
   fi
 
-  # Render template to IG_HOME/config/git/, symlink stays internal
+  # Render template directly to IG_HOME/config/git/
+  # No symlink needed - git includes this file via include.path
   local template="${IG_HOME}/modules/git/gitconfig.tmpl"
-  ig_render_managed_config "git" "$template" "gitconfig" "${IG_HOME}/config/git/gitconfig"
+  local config_dir="${IG_HOME}/config/git"
+  local config_file="${config_dir}/gitconfig"
+  mkdir -p "$config_dir"
+
+  local rendered
+  rendered="$(ig_render_template "$template")"
+  printf '%s\n' "$rendered" > "$config_file"
+  ig_debug "Wrote git config: $config_file"
+
+  # Track in state (no symlink, just the file)
+  ig_state_config_track "git" "$config_file" "git:include.path"
+  ig_log_configure "config:git/gitconfig"
 
   # Tell git to include our config
-  local include_path="${IG_HOME}/config/git/gitconfig"
-  if ! git config --global --get-all include.path 2>/dev/null | grep -qF "$include_path"; then
-    git config --global --add include.path "$include_path"
+  if ! git config --global --get-all include.path 2>/dev/null | grep -qF "$config_file"; then
+    git config --global --add include.path "$config_file"
     ig_debug "Added ig-term gitconfig to git includes"
   fi
 

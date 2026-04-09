@@ -142,10 +142,13 @@ ig_module_install() {
 
   ig_info "Installing module: $name"
   (
+    set +e
     export IG_MODULE_NAME="$name"
     export IG_MODULE_PATH="$mod_path"
     source "$install_script"
-  )
+  ) || {
+    ig_warn "Install script had errors for: $name"
+  }
 
   ig_state_module_installed "$name"
   ig_log_install "module:${name}"
@@ -165,10 +168,13 @@ ig_module_configure() {
 
   ig_info "Configuring module: $name"
   (
+    set +e
     export IG_MODULE_NAME="$name"
     export IG_MODULE_PATH="$mod_path"
     source "$configure_script"
-  )
+  ) || {
+    ig_warn "Configure script had errors for: $name"
+  }
 
   ig_state_module_configured "$name"
   ig_log_configure "module:${name}"
@@ -212,7 +218,7 @@ ig_install_all() {
 
   local i=0
   for mod in "${modules[@]}"; do
-    (( i++ ))
+    i=$(( i + 1 ))
     ig_step "$i" "$total" "Module: $mod"
     ig_module_install "$mod" || ig_warn "Install failed for: $mod"
     ig_module_configure "$mod" || ig_warn "Configure failed for: $mod"
@@ -234,7 +240,7 @@ ig_apply_all() {
 
   local i=0
   for mod in "${modules[@]}"; do
-    (( i++ ))
+    i=$(( i + 1 ))
     ig_step "$i" "$total" "Configuring: $mod"
     ig_module_configure "$mod" || ig_warn "Configure failed for: $mod"
   done

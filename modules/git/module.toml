@@ -5,7 +5,7 @@ version = "1.0.0"
 default = true
 
 [dependencies]
-requires = []
+requires = ["shell"]
 tools = ["git"]
 
 [platforms]
