@@ -1,0 +1,11 @@
+# ig-term local overrides (machine-specific)
+# This file is NOT tracked by git
+# It merges on top of ig.toml with highest priority
+#
+# Examples:
+#
+# [terminal]
+# font_size = 14
+#
+# [shell.custom_aliases]
+# repos = "cd ~/my-repos"

@@ -14,6 +14,7 @@ Thumbs.db
 backups/
 generated/
 local.toml
+!templates/local.toml
 
 # Generated configs (real files live here, symlinked to system paths)
 # Only templates are tracked in git, not the generated output
