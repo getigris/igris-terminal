@@ -1,0 +1,42 @@
+# ig-term :: Starship preset - Minimal
+
+format = """$directory$git_branch$git_status$character"""
+
+[directory]
+style = "bold fg:#7aa2f7"
+truncation_length = 2
+truncation_symbol = ".../"
+
+[git_branch]
+symbol = " "
+style = "fg:#bb9af7"
+format = "[$symbol$branch]($style) "
+
+[git_status]
+style = "fg:#e0af68"
+format = "[$all_status$ahead_behind]($style)"
+
+[character]
+success_symbol = "[>](bold fg:#73daca)"
+error_symbol = "[>](bold fg:#f7768e)"
+
+[nodejs]
+disabled = true
+
+[rust]
+disabled = true
+
+[golang]
+disabled = true
+
+[php]
+disabled = true
+
+[python]
+disabled = true
+
+[java]
+disabled = true
+
+[time]
+disabled = true

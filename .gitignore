@@ -1,0 +1,30 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.code-workspace
+
+# ig-term runtime (user-specific, not tracked)
+backups/
+generated/
+local.toml
+
+# Generated configs (real files live here, symlinked to system paths)
+# Only templates are tracked in git, not the generated output
+/config/
+
+# Zim modules (installed at runtime)
+.zim/
+
+# Node (if docs site is added later)
+node_modules/
+
+# Env files
+.env
+.env.*

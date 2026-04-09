@@ -1,0 +1,43 @@
+# ig-term default configuration
+# Copy to ~/.config/ig-term/ig.toml and customize
+
+[ig]
+version = "0.1.0"
+
+[modules]
+shell = true
+prompt = true
+terminal = true
+theme = true
+fonts = true
+tools = true
+git = true
+
+[shell]
+framework = "zim"
+aliases = ["git", "navigation", "utilities"]
+functions = ["cdd", "smart-install", "killport"]
+welcome = true
+
+[prompt]
+engine = "starship"
+preset = "default"
+
+[terminal]
+app = "ghostty"
+font_family = "Hack Nerd Font"
+font_size = 16
+opacity = 0.95
+
+[theme]
+name = "tokyo-night"
+
+[fonts]
+family = "Hack"
+variant = "NerdFont"
+
+[tools]
+bat = true
+lsd = true
+fzf = true
+zoxide = true

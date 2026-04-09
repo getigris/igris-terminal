@@ -1,0 +1,19 @@
+# ig-term :: Git sensible defaults
+# Template rendered by ig-term - edit the template, not this file
+# User identity (name, email, signing key) is NOT managed here
+
+[init]
+  defaultBranch = {{IG_GIT_DEFAULT_BRANCH}}
+
+[push]
+  autoSetupRemote = true
+
+[status]
+  showUntrackedFiles = all
+
+[core]
+  fsmonitor = true
+  untrackedcache = true
+
+[pull]
+  rebase = {{IG_GIT_PULL_REBASE}}

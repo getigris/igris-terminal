@@ -1,0 +1,15 @@
+[module]
+name = "terminal"
+description = "Ghostty terminal emulator configuration"
+version = "1.0.0"
+default = true
+
+[dependencies]
+requires = ["theme", "fonts"]
+tools = ["ghostty"]
+
+[platforms]
+supported = ["macos", "linux"]
+
+[packages]
+brew = ["ghostty"]

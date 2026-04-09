@@ -1,0 +1,48 @@
+# ig-term :: Ghostty terminal configuration
+# Template rendered by ig-term - edit the template, not this file
+# Run 'ig apply' to regenerate
+
+# Shell
+command = /bin/zsh
+
+# Font
+font-family = {{IG_TERMINAL_FONT_FAMILY}}
+font-size = {{IG_TERMINAL_FONT_SIZE}}
+
+# Window
+window-padding-x = 16
+window-padding-y = 12
+window-decoration = true
+background-opacity = {{IG_TERMINAL_OPACITY}}
+
+# Theme colors
+background = {{IG_COLOR_BG}}
+foreground = {{IG_COLOR_FG}}
+cursor-color = {{IG_COLOR_CURSOR}}
+selection-background = {{IG_COLOR_SELECTION_BG}}
+selection-foreground = {{IG_COLOR_SELECTION_FG}}
+
+# Normal colors
+palette = 0={{IG_COLOR_BLACK}}
+palette = 1={{IG_COLOR_RED}}
+palette = 2={{IG_COLOR_GREEN}}
+palette = 3={{IG_COLOR_YELLOW}}
+palette = 4={{IG_COLOR_BLUE}}
+palette = 5={{IG_COLOR_MAGENTA}}
+palette = 6={{IG_COLOR_CYAN}}
+palette = 7={{IG_COLOR_WHITE}}
+
+# Bright colors
+palette = 8={{IG_COLOR_BRIGHT_BLACK}}
+palette = 9={{IG_COLOR_BRIGHT_RED}}
+palette = 10={{IG_COLOR_BRIGHT_GREEN}}
+palette = 11={{IG_COLOR_BRIGHT_YELLOW}}
+palette = 12={{IG_COLOR_BRIGHT_BLUE}}
+palette = 13={{IG_COLOR_BRIGHT_MAGENTA}}
+palette = 14={{IG_COLOR_BRIGHT_CYAN}}
+palette = 15={{IG_COLOR_BRIGHT_WHITE}}
+
+# Misc
+copy-on-select = clipboard
+mouse-hide-while-typing = true
+confirm-close-surface = false

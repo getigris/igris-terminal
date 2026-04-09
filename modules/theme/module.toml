@@ -1,0 +1,12 @@
+[module]
+name = "theme"
+description = "Unified color theme across all tools"
+version = "1.0.0"
+default = true
+
+[dependencies]
+requires = []
+tools = []
+
+[platforms]
+supported = ["macos", "linux"]

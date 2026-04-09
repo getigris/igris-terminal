@@ -1,0 +1,12 @@
+[module]
+name = "tools"
+description = "Modern CLI replacements: bat, lsd, fzf, zoxide"
+version = "1.0.0"
+default = true
+
+[dependencies]
+requires = []
+tools = []
+
+[platforms]
+supported = ["macos", "linux"]

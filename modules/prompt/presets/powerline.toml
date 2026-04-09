@@ -1,0 +1,77 @@
+# ig-term :: Starship preset - Powerline
+
+format = """
+[](fg:#7aa2f7)\
+[ $os ](bg:#7aa2f7 fg:#1a1b26)\
+[](bg:#394260 fg:#7aa2f7)\
+$directory\
+[](fg:#394260 bg:#212736)\
+$git_branch\
+$git_status\
+[](fg:#212736 bg:#1d2230)\
+$nodejs\
+$rust\
+$golang\
+$python\
+$java\
+[](fg:#1d2230)\
+\n$character"""
+
+[os]
+disabled = false
+style = "bg:#7aa2f7 fg:#1a1b26"
+
+[os.symbols]
+Macos = ""
+Linux = ""
+Windows = ""
+
+[directory]
+style = "fg:#a9b1d6 bg:#394260"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = ".../"
+
+[git_branch]
+symbol = ""
+style = "bg:#212736"
+format = '[[ $symbol $branch ](fg:#73daca bg:#212736)]($style)'
+
+[git_status]
+style = "bg:#212736"
+format = '[[($all_status$ahead_behind )](fg:#e0af68 bg:#212736)]($style)'
+
+[nodejs]
+symbol = ""
+style = "bg:#1d2230"
+format = '[[ $symbol $version ](fg:#7aa2f7 bg:#1d2230)]($style)'
+
+[rust]
+symbol = ""
+style = "bg:#1d2230"
+format = '[[ $symbol $version ](fg:#7aa2f7 bg:#1d2230)]($style)'
+
+[golang]
+symbol = ""
+style = "bg:#1d2230"
+format = '[[ $symbol $version ](fg:#7aa2f7 bg:#1d2230)]($style)'
+
+[python]
+symbol = ""
+style = "bg:#1d2230"
+format = '[[ $symbol $version ](fg:#7aa2f7 bg:#1d2230)]($style)'
+
+[java]
+symbol = ""
+style = "bg:#1d2230"
+format = '[[ $symbol $version ](fg:#7aa2f7 bg:#1d2230)]($style)'
+
+[time]
+disabled = false
+time_format = "%R"
+style = "bg:#1d2230"
+format = '[[  $time ](fg:#a0a9cb bg:#1d2230)]($style)'
+
+[character]
+success_symbol = "[](bold fg:#73daca)"
+error_symbol = "[](bold fg:#f7768e)"

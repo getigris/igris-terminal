@@ -1,0 +1,89 @@
+name: Bug Report
+description: Report a bug in ig-term
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please fill out the sections below.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the unexpected behavior.
+      placeholder: "When I run `ig init`, it fails with..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: Describe the correct behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps or commands to reproduce the issue.
+      placeholder: |
+        1. Run `ig init`
+        2. Select default config
+        3. Observe error...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module affected
+      options:
+        - shell
+        - prompt
+        - terminal
+        - theme
+        - fonts
+        - tools
+        - git
+        - core / CLI
+        - install script
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: terminal
+    attributes:
+      label: Terminal emulator
+      options:
+        - Ghostty
+        - Kitty
+        - iTerm2
+        - Warp
+        - Apple Terminal
+        - Alacritty
+        - WezTerm
+        - Other
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Run `ig doctor` and paste the output here.
+      placeholder: |
+        - OS: macOS 15.3 (arm64)
+        - ig-term: 0.1.0
+        - Shell: zsh 5.9
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or error output
+      description: Paste any relevant output. Run with `IG_LOG_LEVEL=debug ig <command>` for more detail.
+      render: shell

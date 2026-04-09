@@ -1,0 +1,16 @@
+[module]
+name = "prompt"
+description = "Starship cross-shell prompt with theme-aware presets"
+version = "1.0.0"
+default = true
+
+[dependencies]
+requires = ["theme"]
+tools = ["starship"]
+
+[platforms]
+supported = ["macos", "linux"]
+
+[packages]
+brew = ["starship"]
+apt = ["starship"]

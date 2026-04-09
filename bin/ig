@@ -1,0 +1,435 @@
+#!/usr/bin/env bash
+# ig-term :: bin/ig - CLI entry point
+set -euo pipefail
+
+# Resolve IG_HOME from script location
+IG_HOME="${IG_HOME:-$(cd "$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")/.." && pwd)}"
+export IG_HOME
+
+# Load core
+source "${IG_HOME}/core/log.sh"
+source "${IG_HOME}/core/platform.sh"
+source "${IG_HOME}/core/config.sh"
+source "${IG_HOME}/core/symlink.sh"
+source "${IG_HOME}/core/engine.sh"
+source "${IG_HOME}/core/version.sh"
+source "${IG_HOME}/core/state.sh"
+source "${IG_HOME}/core/logger.sh"
+
+# ── Commands ──────────────────────────────────────────────
+
+cmd_init() {
+  ig_header "ig-term init"
+
+  # Ensure package manager is available
+  if [[ "$(ig_os)" == "macos" ]]; then
+    ig_ensure_brew
+  fi
+
+  # Initialize config
+  ig_config_init
+  ig_config_load
+  ig_export_theme_colors
+
+  # Run full install
+  ig_install_all
+
+  # Mark initialized
+  ig_state_mark_initialized
+  ig_log_event "init" "ig-term" "v$(ig_version) on $(ig_os) $(ig_arch)"
+
+  echo ""
+  ig_success "ig-term is ready! Restart your terminal or run: exec zsh"
+}
+
+cmd_apply() {
+  ig_config_load
+  ig_apply_all
+  ig_log_event "apply" "all-modules" "re-applied configuration"
+}
+
+cmd_update() {
+  ig_config_load
+  local check_only="${1:-}"
+
+  if [[ "$check_only" == "--check" ]]; then
+    ig_update_check
+  else
+    ig_update
+    ig_log_update "ig-term" "updated to $(ig_version_full)"
+  fi
+}
+
+cmd_module() {
+  ig_config_load
+  local action="${1:-list}"; shift 2>/dev/null || true
+
+  case "$action" in
+    list)
+      ig_header "Modules"
+      for mod in $(ig_modules_available); do
+        ig_module_meta "$mod" 2>/dev/null || continue
+        local status="disabled"
+        ig_module_enabled "$mod" && status="enabled"
+        local state_info=""
+        if ig_state_module_is_installed "$mod" 2>/dev/null; then
+          state_info=" (installed)"
+        fi
+        if [[ "$status" == "enabled" ]]; then
+          printf "  ${_IG_GREEN}%-12s${_IG_RESET} %s${_IG_DIM}%s${_IG_RESET}\n" "$mod" "$_MOD_DESC" "$state_info"
+        else
+          printf "  ${_IG_DIM}%-12s${_IG_RESET} ${_IG_DIM}%s%s${_IG_RESET}\n" "$mod" "$_MOD_DESC" "$state_info"
+        fi
+      done
+      ;;
+    enable)
+      local mod="${1:-}"
+      [[ -z "$mod" ]] && ig_die "Usage: ig module enable <name>"
+
+      # Verify module exists
+      ig_module_path "$mod" &>/dev/null || ig_die "Module not found: $mod"
+
+      # Update ig.toml
+      _ig_config_set_module "$mod" "true"
+      ig_info "Enabled module: $mod"
+
+      # Install and configure
+      ig_config_load
+      ig_export_theme_colors
+      ig_module_install "$mod"
+      ig_module_configure "$mod"
+
+      ig_state_module_installed "$mod"
+      ig_state_module_configured "$mod"
+      ig_log_enable "module:${mod}"
+      ig_success "Module '$mod' enabled and configured"
+      ;;
+    disable)
+      local mod="${1:-}"
+      [[ -z "$mod" ]] && ig_die "Usage: ig module disable <name>"
+
+      # Update ig.toml
+      _ig_config_set_module "$mod" "false"
+
+      ig_state_module_removed "$mod"
+      ig_log_disable "module:${mod}"
+      ig_success "Module '$mod' disabled"
+      ig_info "Run 'ig apply' to regenerate configs without this module"
+      ;;
+    *)
+      ig_die "Unknown module action: $action (use: list, enable, disable)"
+      ;;
+  esac
+}
+
+cmd_theme() {
+  ig_config_load
+  local action="${1:-list}"; shift 2>/dev/null || true
+
+  case "$action" in
+    list)
+      ig_header "Themes"
+      local current
+      current="$(ig_config "theme.name" "tokyo-night")"
+      for dir in "${IG_HOME}"/themes/*/; do
+        [[ -f "${dir}theme.toml" ]] || continue
+        local name
+        name="$(basename "$dir")"
+        if [[ "$name" == "$current" ]]; then
+          printf "  ${_IG_GREEN}* %s${_IG_RESET}\n" "$name"
+        else
+          printf "    %s\n" "$name"
+        fi
+      done
+      # Check user themes
+      if [[ -d "${IG_CONFIG_DIR}/themes" ]]; then
+        for dir in "${IG_CONFIG_DIR}"/themes/*/; do
+          [[ -f "${dir}theme.toml" ]] || continue
+          local name
+          name="$(basename "$dir")"
+          if [[ "$name" == "$current" ]]; then
+            printf "  ${_IG_GREEN}* %s (custom)${_IG_RESET}\n" "$name"
+          else
+            printf "    %s (custom)\n" "$name"
+          fi
+        done
+      fi
+      ;;
+    set)
+      local theme="${1:-}"
+      [[ -z "$theme" ]] && ig_die "Usage: ig theme set <name>"
+
+      # Verify theme exists
+      local theme_file="${IG_HOME}/themes/${theme}/theme.toml"
+      local user_theme="${IG_CONFIG_DIR}/themes/${theme}/theme.toml"
+      if [[ ! -f "$theme_file" ]] && [[ ! -f "$user_theme" ]]; then
+        ig_die "Theme not found: $theme"
+      fi
+
+      # Update ig.toml
+      _ig_config_set_theme "$theme"
+      ig_info "Theme set to: $theme"
+
+      # Re-apply configs with new theme
+      ig_config_load
+      ig_export_theme_colors
+      ig_apply_all
+
+      ig_log_event "theme" "$theme" "switched theme and re-applied"
+      ig_success "Theme '$theme' applied"
+      ;;
+    *)
+      ig_die "Unknown theme action: $action (use: list, set)"
+      ;;
+  esac
+}
+
+cmd_list() {
+  ig_config_load
+  ig_header "ig-term status"
+  ig_state_summary
+}
+
+cmd_logs() {
+  local filter="${1:-}"
+  local count="${2:-30}"
+
+  ig_header "ig-term logs"
+
+  if [[ -n "$filter" ]] && [[ "$filter" != "--"* ]]; then
+    ig_log_filter "$filter" "$count"
+  else
+    ig_log_show "$count"
+  fi
+}
+
+cmd_doctor() {
+  ig_config_load
+  ig_header "ig-term doctor"
+
+  local issues=0
+
+  _check() {
+    local label="$1" cmd="$2"
+    if command -v "$cmd" &>/dev/null; then
+      local ver
+      ver="$("$cmd" --version 2>&1 | head -1)"
+      printf "  ${_IG_GREEN}ok${_IG_RESET}  %-14s %s\n" "$label" "$ver"
+    else
+      printf "  ${_IG_RED}!!${_IG_RESET}  %-14s not found\n" "$label"
+      (( issues++ ))
+    fi
+  }
+
+  echo "  System:"
+  printf "  %-18s %s\n" "OS" "$(ig_os) ($(ig_arch))"
+  printf "  %-18s %s\n" "Package manager" "$(ig_pkg)"
+  printf "  %-18s %s\n" "Terminal" "$(ig_terminal)"
+  printf "  %-18s %s\n" "ig-term" "$(ig_version_full)"
+  echo ""
+
+  echo "  Tools:"
+  _check "zsh" "zsh"
+  _check "starship" "starship"
+  _check "ghostty" "ghostty"
+  _check "bat" "bat"
+  _check "lsd" "lsd"
+  _check "fzf" "fzf"
+  _check "zoxide" "zoxide"
+  _check "git" "git"
+  echo ""
+
+  echo "  Config:"
+  local config="${IG_CONFIG_DIR}/ig.toml"
+  if [[ -f "$config" ]]; then
+    printf "  ${_IG_GREEN}ok${_IG_RESET}  %s\n" "$config"
+  else
+    printf "  ${_IG_RED}!!${_IG_RESET}  %s (missing)\n" "$config"
+    (( issues++ ))
+  fi
+
+  local state="${IG_STATE_FILE}"
+  if [[ -f "$state" ]]; then
+    printf "  ${_IG_GREEN}ok${_IG_RESET}  %s\n" "$state"
+  else
+    printf "  ${_IG_DIM}--${_IG_RESET}  %s (not initialized)\n" "$state"
+  fi
+
+  echo ""
+  if (( issues > 0 )); then
+    ig_warn "${issues} issue(s) found"
+    return 1
+  else
+    ig_success "Everything looks good"
+  fi
+}
+
+cmd_backup() {
+  ig_config_load
+  ig_header "ig-term backup"
+
+  local files=(
+    "${HOME}/.zshrc"
+    "${HOME}/.zshenv"
+    "${HOME}/.config/starship.toml"
+    "${HOME}/.config/ghostty/config"
+    "${HOME}/.gitconfig"
+  )
+
+  local count=0
+  for f in "${files[@]}"; do
+    if [[ -e "$f" ]]; then
+      ig_backup "$f"
+      (( count++ ))
+    fi
+  done
+
+  ig_log_event "backup" "manual" "${count} file(s)"
+  ig_success "Backed up ${count} file(s) to ${IG_BACKUP_DIR}"
+}
+
+cmd_uninstall() {
+  ig_header "ig-term uninstall"
+
+  if ! ig_confirm "This will remove ig-term configs and restore backups. Continue?"; then
+    ig_info "Aborted"
+    return 0
+  fi
+
+  ig_config_load
+
+  # Remove all tracked config symlinks from state
+  local removed=0
+  if [[ -f "$IG_STATE_FILE" ]]; then
+    # Parse state to find all tracked symlinks
+    local -A _state_backup=()
+    for k in "${!_TOML_DATA[@]}"; do
+      _state_backup["$k"]="${_TOML_DATA[$k]}"
+    done
+
+    toml_parse "$IG_STATE_FILE"
+
+    for key in $(toml_keys "configs" | grep '\.symlink$'); do
+      local symlink
+      symlink="$(toml_get "$key")"
+      if [[ -n "$symlink" ]]; then
+        ig_unlink "$symlink"
+        (( removed++ ))
+      fi
+    done
+
+    _TOML_DATA=()
+    for k in "${!_state_backup[@]}"; do
+      _TOML_DATA["$k"]="${_state_backup[$k]}"
+    done
+  fi
+
+  # Fallback: also check known paths in case state is empty
+  local fallback_targets=(
+    "${HOME}/.zshrc"
+    "${HOME}/.zshenv"
+    "${HOME}/.config/starship.toml"
+    "${HOME}/.config/ghostty/config"
+    "${IG_CONFIG_DIR}/generated/fzf-colors.sh"
+  )
+
+  for target in "${fallback_targets[@]}"; do
+    if [[ -L "$target" ]]; then
+      ig_unlink "$target"
+      (( removed++ ))
+    fi
+  done
+
+  # Remove git include
+  local git_include="${IG_HOME}/config/git/gitconfig"
+  git config --global --unset-all include.path "$git_include" 2>/dev/null || true
+
+  ig_log_event "uninstall" "ig-term" "removed ${removed} symlink(s)"
+  ig_success "ig-term uninstalled. Removed ${removed} managed config(s)."
+  ig_info "Your backups are in: ${IG_BACKUP_DIR}"
+  ig_info "To fully remove, delete: ${IG_HOME} and ${IG_CONFIG_DIR}"
+}
+
+cmd_help() {
+  echo "ig-term $(ig_version) - Terminal configuration framework"
+  echo ""
+  echo "Usage: ig <command> [options]"
+  echo ""
+  echo "Commands:"
+  echo "  init                First-time setup (install all modules)"
+  echo "  apply               Re-generate configs without reinstalling packages"
+  echo "  update [--check]    Pull latest and re-apply (or just check)"
+  echo "  module list          Show all modules and their status"
+  echo "  module enable <mod>  Enable, install, and configure a module"
+  echo "  module disable <mod> Disable a module"
+  echo "  theme list           Show available themes"
+  echo "  theme set <name>     Switch theme and re-apply configs"
+  echo "  list                 Show installed modules and tools"
+  echo "  logs [action]        Show operation history (filter: install, update, etc.)"
+  echo "  doctor               Health check"
+  echo "  backup               Manual backup of current configs"
+  echo "  uninstall            Remove ig-term and restore backups"
+  echo "  version              Show version"
+  echo "  help                 Show this help"
+}
+
+# ── Config editing helpers ────────────────────────────────
+
+# Set a module enabled/disabled in ig.toml
+_ig_config_set_module() {
+  local module="$1"
+  local value="$2"
+  local config_file="${IG_CONFIG_DIR}/ig.toml"
+
+  [[ -f "$config_file" ]] || ig_die "Config not found: $config_file"
+
+  if grep -q "^${module} = " "$config_file" 2>/dev/null; then
+    # Update existing
+    sed -i'' -e "s/^${module} = .*/${module} = ${value}/" "$config_file"
+  else
+    # Add after [modules] section
+    sed -i'' -e "/^\[modules\]/a\\
+${module} = ${value}
+" "$config_file"
+  fi
+}
+
+# Set theme in ig.toml
+_ig_config_set_theme() {
+  local theme="$1"
+  local config_file="${IG_CONFIG_DIR}/ig.toml"
+
+  [[ -f "$config_file" ]] || ig_die "Config not found: $config_file"
+
+  if grep -q '^name = ' "$config_file" 2>/dev/null; then
+    sed -i'' -e "s/^name = .*/name = \"${theme}\"/" "$config_file"
+  fi
+}
+
+# ── Main dispatcher ───────────────────────────────────────
+
+main() {
+  local cmd="${1:-help}"; shift 2>/dev/null || true
+
+  case "$cmd" in
+    init)      cmd_init "$@"      ;;
+    apply)     cmd_apply "$@"     ;;
+    update)    cmd_update "$@"    ;;
+    module)    cmd_module "$@"    ;;
+    theme)     cmd_theme "$@"     ;;
+    list)      cmd_list "$@"      ;;
+    logs)      cmd_logs "$@"      ;;
+    doctor)    cmd_doctor "$@"    ;;
+    backup)    cmd_backup "$@"    ;;
+    uninstall) cmd_uninstall "$@" ;;
+    version)   ig_version_full    ;;
+    help|-h|--help) cmd_help      ;;
+    *)
+      ig_error "Unknown command: $cmd"
+      cmd_help
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"

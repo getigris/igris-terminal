@@ -1,0 +1,42 @@
+# Tokyo Night color palette
+# Source of truth for all tool-specific color configs
+
+[meta]
+name = "Tokyo Night"
+author = "ig-term"
+variant = "dark"
+
+[colors]
+background = "#1a1b26"
+foreground = "#a9b1d6"
+cursor = "#c0caf5"
+selection_bg = "#28344a"
+selection_fg = "#7aa2f7"
+
+[colors.normal]
+black   = "#414868"
+red     = "#f7768e"
+green   = "#73daca"
+yellow  = "#e0af68"
+blue    = "#7aa2f7"
+magenta = "#bb9af7"
+cyan    = "#7dcfff"
+white   = "#c0caf5"
+
+[colors.bright]
+black   = "#565f89"
+red     = "#f7768e"
+green   = "#9ece6a"
+yellow  = "#e0af68"
+blue    = "#7aa2f7"
+magenta = "#bb9af7"
+cyan    = "#7dcfff"
+white   = "#c0caf5"
+
+[colors.accent]
+primary   = "#7aa2f7"
+secondary = "#bb9af7"
+info      = "#7dcfff"
+success   = "#73daca"
+warning   = "#e0af68"
+error     = "#f7768e"

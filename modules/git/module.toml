@@ -1,0 +1,16 @@
+[module]
+name = "git"
+description = "Git configuration with sensible defaults"
+version = "1.0.0"
+default = true
+
+[dependencies]
+requires = []
+tools = ["git"]
+
+[platforms]
+supported = ["macos", "linux"]
+
+[packages]
+brew = ["git"]
+apt = ["git"]

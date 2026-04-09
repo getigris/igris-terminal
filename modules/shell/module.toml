@@ -1,0 +1,16 @@
+[module]
+name = "shell"
+description = "ZSH shell with Zim framework, aliases, and functions"
+version = "1.0.0"
+default = true
+
+[dependencies]
+requires = ["theme"]
+tools = ["zsh"]
+
+[platforms]
+supported = ["macos", "linux"]
+
+[packages]
+brew = ["zsh"]
+apt = ["zsh"]

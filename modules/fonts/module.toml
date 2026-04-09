@@ -1,0 +1,16 @@
+[module]
+name = "fonts"
+description = "Nerd Fonts for terminal icons and glyphs"
+version = "1.0.0"
+default = true
+
+[dependencies]
+requires = []
+tools = []
+
+[platforms]
+supported = ["macos", "linux"]
+
+[packages]
+brew = ["font-hack-nerd-font"]
+apt = ["fonts-hack-ttf"]
