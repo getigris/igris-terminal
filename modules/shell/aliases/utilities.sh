@@ -15,7 +15,10 @@ else
 fi
 
 # vim -> nvim (only if installed)
-command -v nvim &>/dev/null && alias vim="nvim"
+if command -v nvim &>/dev/null; then
+  alias vim="nvim"
+  alias vi="nvim"
+fi
 
 # Quick open
 alias o.='open .'
