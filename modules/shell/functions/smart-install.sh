@@ -12,6 +12,14 @@ smart-install() {
       bun install
     elif [[ -f "deno.json" ]] || [[ -f "deno.jsonc" ]]; then
       deno install
+    elif [[ -f "jspm.config.js" ]] || [[ -d "jspm_packages" ]]; then
+      jspm install
+    elif [[ -d ".meteor" ]]; then
+      meteor npm install
+    elif [[ -f "rush.json" ]]; then
+      rush install
+    elif [[ -f "lerna.json" ]]; then
+      lerna bootstrap
     else
       echo "Node.js project detected. No lockfile found, using npm."
       npm install
@@ -30,6 +38,8 @@ smart-install() {
     pip install -e .
   elif [[ -f "Gemfile" ]]; then
     bundle install
+  elif [[ -f "composer.json" ]]; then
+    composer install
   elif ls *.csproj 1>/dev/null 2>&1 || ls *.sln 1>/dev/null 2>&1; then
     dotnet restore
   else

@@ -1,5 +1,7 @@
 # ig-term :: Starship preset - Powerline
 
+command_timeout = 2000
+
 format = """
 [](fg:#7aa2f7)\
 [ $os ](bg:#7aa2f7 fg:#1a1b26)\
