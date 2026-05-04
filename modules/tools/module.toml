@@ -1,7 +1,7 @@
 [module]
 name = "tools"
-description = "Modern CLI replacements: bat, lsd, fzf, zoxide, mole; optional: igris-memory"
-version = "1.1.0"
+description = "Modern CLI replacements: bat, lsd, fzf, zoxide"
+version = "1.0.0"
 default = true
 
 [dependencies]

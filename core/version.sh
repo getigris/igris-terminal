@@ -5,7 +5,7 @@ _IG_VERSION_LOADED="${_IG_VERSION_LOADED:-}"
 [[ -n "$_IG_VERSION_LOADED" ]] && return 0
 _IG_VERSION_LOADED=1
 
-IG_VERSION="0.4.0"
+IG_VERSION="0.3.0"
 
 ig_version() {
   echo "$IG_VERSION"
@@ -65,13 +65,9 @@ ig_update() {
 
   # Re-load config (new defaults may have been added)
   ig_config_load
-  ig_export_theme_colors
 
-  # Run install + configure for all enabled modules. install scripts are
-  # idempotent (skip already-installed tools and adopt them into state),
-  # so a version bump that introduces new dependencies — or new opt-in
-  # prompts like igris-memory — is picked up automatically here.
-  ig_install_all
+  # Re-apply all module configurations
+  ig_apply_all
 
   ig_run_hooks "post-update.d" || true
   ig_success "Updated to $(ig_version_full)"

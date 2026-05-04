@@ -17,8 +17,7 @@ curl -fsSL https://raw.githubusercontent.com/getigris/igris-terminal/main/instal
 | Terminal | Ghostty | Modern, GPU-accelerated, simple config |
 | Theme | Tokyo Night | Popular dark theme with great contrast |
 | Font | Hack Nerd Font | Complete glyph set, readable |
-| CLI tools | bat, lsd, fzf, zoxide, mole | Modern replacements for cat, ls, find, cd + mole for archive workflows |
-| Optional  | igris-memory | Cross-session memory MCP from `getigris/tap`; opt-in with prompt on first apply |
+| CLI tools | bat, lsd, fzf, zoxide | Modern replacements for cat, ls, find, cd |
 
 ## Commands
 
@@ -35,7 +34,6 @@ ig theme set X       # Switch theme and re-apply configs
 ig list              # Show installed modules and tools with versions
 ig logs              # Show operation history
 ig logs install      # Filter logs by action (install, update, remove, etc.)
-ig sync              # Reconcile installed tools with current config (install missing, adopt pre-existing)
 ig doctor            # Health check
 ig backup            # Backup current configs
 ig uninstall         # Remove ig-term, restore backups
@@ -50,7 +48,7 @@ ig-term is built around independent modules. Each can be enabled or disabled:
 - **shell** - ZSH + Zim framework + aliases + functions
 - **prompt** - Starship with multiple presets
 - **terminal** - Ghostty configuration
-- **tools** - bat, lsd, fzf, zoxide, mole (and optional `igris-memory` from `getigris/tap`, prompted on first apply)
+- **tools** - bat, lsd, fzf, zoxide
 - **git** - Sensible defaults (does not touch your identity)
 
 ## Configuration

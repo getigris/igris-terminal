@@ -2,7 +2,7 @@
 # Copy to ~/.config/ig-term/ig.toml and customize
 
 [ig]
-version = "0.4.0"
+version = "0.3.0"
 
 [modules]
 shell = true
@@ -41,7 +41,3 @@ bat = true
 lsd = true
 fzf = true
 zoxide = true
-mole = true
-# igris_memory is opt-in; left unset so `ig apply` will prompt once,
-# then persist the user's choice (true/false) into ~/.config/ig-term/ig.toml.
-# igris_memory = false
