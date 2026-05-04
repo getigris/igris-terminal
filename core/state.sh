@@ -211,6 +211,8 @@ _ig_tool_version() {
     lsd)      ver="$(lsd --version 2>/dev/null | awk '{print $2}')" ;;
     fzf)      ver="$(fzf --version 2>/dev/null | awk '{print $1}')" ;;
     zoxide)   ver="$(zoxide --version 2>/dev/null | awk '{print $2}')" ;;
+    mole)     ver="$(mole --version 2>/dev/null | awk '{print $NF}')" ;;
+    igris-memory) ver="$(igris-memory --version 2>/dev/null | awk '{print $NF}')" ;;
     git)      ver="$(git --version 2>/dev/null | awk '{print $3}')" ;;
     *)        ver="$(command -v "$tool" &>/dev/null && echo "installed" || echo "")" ;;
   esac
