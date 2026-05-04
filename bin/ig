@@ -243,7 +243,7 @@ cmd_doctor() {
   local _im_flag
   _im_flag="$(ig_config "tools.igris_memory" "")"
   case "$_im_flag" in
-    true)  _check "igris-memory" "igris-memory" ;;
+    true)  _check "igris-memory" "igmem" ;;
     false) printf "  ${_IG_DIM}--${_IG_RESET}  %-14s opt-in disabled\n" "igris-memory" ;;
     *)     printf "  ${_IG_DIM}--${_IG_RESET}  %-14s opt-in not yet decided (run: ig sync)\n" "igris-memory" ;;
   esac
@@ -296,13 +296,24 @@ cmd_sync() {
 
   # Diff: present on system vs missing. Pre-existing tools get adopted into
   # state so future runs treat them as managed even if ig-term didn't install them.
+  # Map state-key → actual executable name for tools whose binary differs
+  # from the formula/state name (e.g. igris-memory ships as `igmem`).
+  _bin_for() {
+    case "$1" in
+      igris-memory) echo "igmem" ;;
+      *)            echo "$1"    ;;
+    esac
+  }
+
   local -a missing=()
   local adopted=0
   echo "  Expected tools:"
   for tool in "${expected[@]}"; do
-    if command -v "$tool" &>/dev/null; then
+    local bin
+    bin="$(_bin_for "$tool")"
+    if command -v "$bin" &>/dev/null; then
       local ver
-      ver="$(_ig_tool_version "$tool")"
+      ver="$(_ig_tool_version "$bin")"
       printf "  ${_IG_GREEN}ok${_IG_RESET}  %-14s v%s\n" "$tool" "$ver"
       # Adopt pre-existing installs into state if not already tracked.
       if [[ -z "$(ig_state_get "tools.${tool}.version" "")" ]]; then

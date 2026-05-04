@@ -34,12 +34,15 @@ _install_tool() {
 }
 
 _install_tool_tap() {
-  local name="$1" tap_ref="$2"
+  # name: short identifier used for state/log keys
+  # tap_ref: fully-qualified brew formula (e.g. getigris/tap/foo)
+  # bin_name: actual executable shipped by the formula (defaults to $name)
+  local name="$1" tap_ref="$2" bin_name="${3:-$1}"
 
-  if ig_has "$name"; then
-    ig_debug "$name already installed"
+  if ig_has "$bin_name"; then
+    ig_debug "$name already installed (bin: $bin_name)"
     local ver
-    ver="$(_ig_tool_version "$name")"
+    ver="$(_ig_tool_version "$bin_name")"
     ig_state_tool_installed "$name" "$ver"
     return 0
   fi
@@ -56,7 +59,7 @@ _install_tool_tap() {
   fi
 
   local ver
-  ver="$(_ig_tool_version "$name")"
+  ver="$(_ig_tool_version "$bin_name")"
   ig_state_tool_installed "$name" "$ver"
   ig_log_install "tool:${name}" "v${ver}"
 }
@@ -84,7 +87,7 @@ _maybe_install_igris_memory() {
 
   case "$current" in
     true)
-      _install_tool_tap igris-memory getigris/tap/igris-memory
+      _install_tool_tap igris-memory getigris/tap/igris-memory igmem
       ;;
     false)
       ig_debug "igris-memory disabled by user config"
@@ -98,7 +101,7 @@ _maybe_install_igris_memory() {
       fi
       if ig_confirm "Install igris-memory (cross-session memory MCP from getigris/tap)?"; then
         _set_tools_flag "igris_memory" "true"
-        _install_tool_tap igris-memory getigris/tap/igris-memory
+        _install_tool_tap igris-memory getigris/tap/igris-memory igmem
       else
         _set_tools_flag "igris_memory" "false"
         ig_info "Skipping igris-memory; re-enable later by setting tools.igris_memory = true in ig.toml"
