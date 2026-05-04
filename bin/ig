@@ -236,7 +236,17 @@ cmd_doctor() {
   _check "lsd" "lsd"
   _check "fzf" "fzf"
   _check "zoxide" "zoxide"
+  _check "mole" "mole"
   _check "git" "git"
+
+  # igris-memory is opt-in: only count as an issue if user enabled it
+  local _im_flag
+  _im_flag="$(ig_config "tools.igris_memory" "")"
+  case "$_im_flag" in
+    true)  _check "igris-memory" "igris-memory" ;;
+    false) printf "  ${_IG_DIM}--${_IG_RESET}  %-14s opt-in disabled\n" "igris-memory" ;;
+    *)     printf "  ${_IG_DIM}--${_IG_RESET}  %-14s opt-in not yet decided (run: ig sync)\n" "igris-memory" ;;
+  esac
   echo ""
 
   echo "  Config:"
@@ -261,6 +271,80 @@ cmd_doctor() {
     return 1
   else
     ig_success "Everything looks good"
+  fi
+}
+
+cmd_sync() {
+  ig_config_load
+  ig_header "ig-term sync"
+
+  # Build the expected tool list from currently-enabled modules + their flags.
+  # This is the contract: what *should* be on disk for the active config.
+  local -a expected=()
+  ig_module_enabled shell    && expected+=("zsh")
+  ig_module_enabled prompt   && expected+=("starship")
+  ig_module_enabled terminal && expected+=("ghostty")
+  ig_module_enabled git      && expected+=("git")
+  if ig_module_enabled tools; then
+    [[ "$(ig_config "tools.bat"    "true")" == "true" ]] && expected+=("bat")
+    [[ "$(ig_config "tools.lsd"    "true")" == "true" ]] && expected+=("lsd")
+    [[ "$(ig_config "tools.fzf"    "true")" == "true" ]] && expected+=("fzf")
+    [[ "$(ig_config "tools.zoxide" "true")" == "true" ]] && expected+=("zoxide")
+    [[ "$(ig_config "tools.mole"   "true")" == "true" ]] && expected+=("mole")
+    [[ "$(ig_config "tools.igris_memory" "")" == "true" ]] && expected+=("igris-memory")
+  fi
+
+  # Diff: present on system vs missing. Pre-existing tools get adopted into
+  # state so future runs treat them as managed even if ig-term didn't install them.
+  local -a missing=()
+  local adopted=0
+  echo "  Expected tools:"
+  for tool in "${expected[@]}"; do
+    if command -v "$tool" &>/dev/null; then
+      local ver
+      ver="$(_ig_tool_version "$tool")"
+      printf "  ${_IG_GREEN}ok${_IG_RESET}  %-14s v%s\n" "$tool" "$ver"
+      # Adopt pre-existing installs into state if not already tracked.
+      if [[ -z "$(ig_state_get "tools.${tool}.version" "")" ]]; then
+        ig_state_tool_installed "$tool" "$ver"
+        adopted=$(( adopted + 1 ))
+      fi
+    else
+      printf "  ${_IG_YELLOW}--${_IG_RESET}  %-14s not installed\n" "$tool"
+      missing+=("$tool")
+    fi
+  done
+
+  # Surface the opt-in pending state explicitly.
+  local im_flag
+  im_flag="$(ig_config "tools.igris_memory" "")"
+  if [[ -z "$im_flag" ]] && ig_module_enabled tools; then
+    printf "  ${_IG_DIM}??${_IG_RESET}  %-14s opt-in pending (will prompt on install)\n" "igris-memory"
+  fi
+  echo ""
+
+  if (( adopted > 0 )); then
+    ig_info "Adopted ${adopted} pre-existing tool(s) into state"
+  fi
+
+  local needs_prompt=false
+  [[ -z "$im_flag" ]] && ig_module_enabled tools && needs_prompt=true
+
+  if (( ${#missing[@]} == 0 )) && [[ "$needs_prompt" == "false" ]]; then
+    ig_success "Everything is in sync"
+    return 0
+  fi
+
+  if (( ${#missing[@]} > 0 )); then
+    ig_warn "Missing: ${missing[*]}"
+  fi
+
+  if ig_confirm "Install missing tools and apply configs now?"; then
+    ig_export_theme_colors
+    ig_install_all
+    ig_log_event "sync" "all-modules" "installed missing tools"
+  else
+    ig_info "Skipped. Re-run later with: ig sync"
   fi
 }
 
@@ -367,6 +451,7 @@ cmd_help() {
   echo "  list                 Show installed modules and tools"
   echo "  logs [action]        Show operation history (filter: install, update, etc.)"
   echo "  doctor               Health check"
+  echo "  sync                 Reconcile installed tools with current config (install missing, adopt pre-existing)"
   echo "  backup               Manual backup of current configs"
   echo "  uninstall            Remove ig-term and restore backups"
   echo "  version              Show version"
@@ -420,6 +505,7 @@ main() {
     list)      cmd_list "$@"      ;;
     logs)      cmd_logs "$@"      ;;
     doctor)    cmd_doctor "$@"    ;;
+    sync)      cmd_sync "$@"      ;;
     backup)    cmd_backup "$@"    ;;
     uninstall) cmd_uninstall "$@" ;;
     version)   ig_version_full    ;;
