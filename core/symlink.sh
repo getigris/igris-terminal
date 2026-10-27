@@ -39,6 +39,61 @@ ig_link() {
   ig_debug "Linked: $target -> $source"
 }
 
+IG_LOADER_BEGIN="# >>> ig-term >>>"
+IG_LOADER_END="# <<< ig-term <<<"
+
+# Symlink <target> to an untracked loader in IG_HOME/config/<module>/ that
+# sources <source>. Installers (bun, IDEs, ...) appending to <target> then
+# write into the loader instead of a file tracked by git. The loader is created
+# once and never rewritten; lines previously appended to <source> through a
+# legacy symlink are moved into it.
+# Usage: ig_loader <module> <source> <filename> <target>
+ig_loader() {
+  local module="$1"
+  local source="$2"
+  local filename="$3"
+  local target="$4"
+  local loader="${IG_HOME}/config/${module}/${filename}"
+
+  if [[ ! -e "$source" ]]; then
+    ig_error "Source does not exist: $source"
+    return 1
+  fi
+
+  mkdir -p "$(dirname "$loader")"
+  if ! grep -qsF "$IG_LOADER_BEGIN" "$loader"; then
+    [[ -f "$loader" ]] && ig_backup "$loader"
+    {
+      printf '%s\n' "$IG_LOADER_BEGIN"
+      printf '[[ -f "%s" ]] && source "%s"\n' "$source" "$source"
+      printf '%s\n' "$IG_LOADER_END"
+      printf '\n# Your own settings go below. ig-term never modifies them.\n'
+    } > "$loader"
+    ig_debug "Wrote loader: $loader"
+  fi
+
+  if [[ -L "$target" ]] && [[ "$(readlink "$target")" == "$source" ]]; then
+    local user_lines
+    user_lines="$(_ig_rescue_local_edits "$source")"
+    [[ -n "$user_lines" ]] && printf '\n%s\n' "$user_lines" >> "$loader"
+  fi
+
+  ig_link "$loader" "$target"
+  ig_state_config_track "$module" "$loader" "$target"
+}
+
+# Print lines added to a tracked file in IG_HOME, then restore it from git
+_ig_rescue_local_edits() {
+  local file="$1"
+  [[ -d "${IG_HOME}/.git" ]] || return 0
+  git -C "$IG_HOME" diff --quiet -- "$file" 2>/dev/null && return 0
+
+  ig_backup "$file" >&2
+  git -C "$IG_HOME" diff --no-color -U0 -- "$file" | sed -n '/^+++/d; s/^+//p'
+  git -C "$IG_HOME" checkout -- "$file"
+  ig_info "Moved local edits of $(basename "$file") to your own file" >&2
+}
+
 # Backup a file before overwriting
 ig_backup() {
   local file="$1"
