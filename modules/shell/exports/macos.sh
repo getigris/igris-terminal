@@ -22,21 +22,6 @@ if [[ -d "$HOME/.bun" ]]; then
   export PATH="$BUN_INSTALL/bin:$PATH"
 fi
 
-# NVM (lazy load for speed)
-export NVM_DIR="$HOME/.nvm"
-if [[ -s "$NVM_DIR/nvm.sh" ]]; then
-  # Lazy load NVM - only init when first called
-  nvm() {
-    unset -f nvm node npm npx
-    source "$NVM_DIR/nvm.sh"
-    [[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
-    nvm "$@"
-  }
-  node() { nvm use default &>/dev/null; command node "$@"; }
-  npm()  { nvm use default &>/dev/null; command npm "$@"; }
-  npx()  { nvm use default &>/dev/null; command npx "$@"; }
-fi
-
 # pyenv
 if command -v pyenv &>/dev/null; then
   eval "$(pyenv init --path)"

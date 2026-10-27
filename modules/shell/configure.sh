@@ -10,13 +10,9 @@ source "${IG_HOME}/core/logger.sh"
 _configure_shell() {
   local mod_dir="${IG_HOME}/modules/shell"
 
-  # .zshenv -> symlink to our file in modules
-  ig_link "${mod_dir}/zsh/zshenv.zsh" "${HOME}/.zshenv"
-  ig_state_config_track "shell" "${mod_dir}/zsh/zshenv.zsh" "${HOME}/.zshenv"
-
-  # .zshrc -> symlink to our file in modules
-  ig_link "${mod_dir}/zsh/zshrc.zsh" "${HOME}/.zshrc"
-  ig_state_config_track "shell" "${mod_dir}/zsh/zshrc.zsh" "${HOME}/.zshrc"
+  # .zshenv/.zshrc -> untracked loaders that source our files (see ig_loader)
+  ig_loader "shell" "${mod_dir}/zsh/zshenv.zsh" "zshenv" "${HOME}/.zshenv"
+  ig_loader "shell" "${mod_dir}/zsh/zshrc.zsh" "zshrc" "${HOME}/.zshrc"
 
   # .zimrc -> symlink to our file in modules
   local zim_dir="${IG_CONFIG_DIR}/zim"

@@ -5,7 +5,7 @@ _IG_VERSION_LOADED="${_IG_VERSION_LOADED:-}"
 [[ -n "$_IG_VERSION_LOADED" ]] && return 0
 _IG_VERSION_LOADED=1
 
-IG_VERSION="0.4.0"
+IG_VERSION="0.5.0"
 
 ig_version() {
   echo "$IG_VERSION"
@@ -56,6 +56,13 @@ ig_update() {
   ig_header "ig-term update"
 
   ig_run_hooks "pre-update.d" || return 1
+
+  if [[ -n "$(git -C "$IG_HOME" status --porcelain --untracked-files=no)" ]]; then
+    ig_error "Local changes in ${IG_HOME} block the update:"
+    git -C "$IG_HOME" status --short --untracked-files=no >&2
+    ig_info "Move them to ${IG_CONFIG_DIR}/custom/ and discard them with: git -C \"${IG_HOME}\" checkout -- ."
+    return 1
+  fi
 
   ig_info "Pulling latest changes..."
   git -C "$IG_HOME" pull --rebase origin main || {

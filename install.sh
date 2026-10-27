@@ -53,7 +53,7 @@ fi
 # ── Clone or update ig-term ──────────────────────────────
 if [[ -d "$IG_HOME" ]]; then
   info "ig-term already installed at ${IG_HOME}, updating..."
-  git -C "$IG_HOME" pull --rebase origin "$IG_BRANCH" || warn "Could not update, using existing version"
+  git -C "$IG_HOME" pull --rebase --autostash origin "$IG_BRANCH" || warn "Could not update, using existing version"
 else
   info "Cloning ig-term..."
   git clone --depth 1 --branch "$IG_BRANCH" "$IG_REPO" "$IG_HOME"

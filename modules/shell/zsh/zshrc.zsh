@@ -55,6 +55,12 @@ if command -v fzf &>/dev/null; then
   source <(fzf --zsh 2>/dev/null) || true
 fi
 
+# nvm (--no-use: the default node is already on PATH from exports)
+if [[ -s "${NVM_DIR}/nvm.sh" ]]; then
+  source "${NVM_DIR}/nvm.sh" --no-use
+  [[ -s "${NVM_DIR}/bash_completion" ]] && source "${NVM_DIR}/bash_completion"
+fi
+
 # direnv (if installed)
 command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
 

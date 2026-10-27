@@ -122,6 +122,10 @@ alias repos="cd ~/Repositories"
 alias myproject="cd ~/work/myproject"
 ```
 
+### Your `.zshrc` and `.zshenv`
+
+`~/.zshrc` and `~/.zshenv` are symlinks to untracked loaders in `~/.local/share/ig-term/config/shell/`. ig-term only owns the block between `# >>> ig-term >>>` and `# <<< ig-term <<<`, which loads its config. Anything below it, including lines added by installers like bun or IDEs, is never touched by `ig update`.
+
 ### Custom modules
 
 Create a module in `~/.config/ig-term/modules/my-module/` with:
