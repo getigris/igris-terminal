@@ -245,10 +245,12 @@ ig_state_config_track() {
   local idx=0
   while ig_state_get "configs.${module}.${idx}.source" &>/dev/null && \
         [[ -n "$(ig_state_get "configs.${module}.${idx}.source")" ]]; do
-    # If this source is already tracked, update it
-    local existing
+    # If this source or symlink is already tracked, update it
+    local existing existing_symlink
     existing="$(ig_state_get "configs.${module}.${idx}.source")"
-    if [[ "$existing" == "$source" ]]; then
+    existing_symlink="$(ig_state_get "configs.${module}.${idx}.symlink")"
+    if [[ "$existing" == "$source" ]] || [[ "$existing_symlink" == "$symlink" ]]; then
+      ig_state_set "configs.${module}.${idx}" "source" "$source"
       ig_state_set "configs.${module}.${idx}" "symlink" "$symlink"
       return 0
     fi
